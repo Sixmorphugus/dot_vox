@@ -20,21 +20,21 @@ mod palette;
 mod parser;
 mod scene;
 
-pub use dot_vox_data::DotVoxData;
+pub use crate::dot_vox_data::DotVoxData;
 
-pub use parser::{Dict, Material};
+pub use crate::parser::{Dict, Material};
 
-pub use model::Model;
-pub use model::Size;
-pub use model::Voxel;
+pub use crate::model::Model;
+pub use crate::model::Size;
+pub use crate::model::Voxel;
 
-pub use scene::*;
+pub use crate::scene::*;
 
 use nom::types::CompleteByteSlice;
 
-pub use palette::DEFAULT_PALETTE;
+pub use crate::palette::DEFAULT_PALETTE;
 
-use parser::parse_vox_file;
+use crate::parser::parse_vox_file;
 
 use std::fs::File;
 use std::io::Read;
@@ -74,6 +74,19 @@ use std::io::Read;
 ///         Voxel { x: 1, y: 1, z: 0, i: 5 }
 ///       )
 ///     }
+///   ),
+///   layers: (0..8).into_iter()
+///     .map(|i| {
+///       let mut layer = Dict::new();
+///       layer.insert("_name".to_owned(), format!("{}", i));
+///       layer
+///      })
+///      .collect(),
+///   scene: vec!(
+///     SceneNode::Transform { attributes: Dict::new(), frames: vec!(Dict::new()), child: 1 },
+///     SceneNode::Group { attributes:  Dict::new(), children: vec!(2) },
+///     SceneNode::Transform { attributes: Dict::new(), frames: vec!({let mut map = Dict::new(); map.insert("_t".to_string(), "0 0 1".to_string()); map}), child: 3 },
+///     SceneNode::Shape { attributes: Dict::new(), models: vec!(ShapeModel { model_id: 0, attributes: Dict::new() }) }
 ///   ),
 ///   palette: DEFAULT_PALETTE.to_vec(),
 ///   materials: (0..256).into_iter()
@@ -138,6 +151,19 @@ pub fn load(filename: &str) -> Result<DotVoxData, &'static str> {
 ///       )
 ///     }
 ///   ),
+///   layers: (0..8).into_iter()
+///     .map(|i| {
+///       let mut layer = Dict::new();
+///       layer.insert("_name".to_owned(), format!("{}", i));
+///       layer
+///      })
+///      .collect(),
+///   scene: vec!(
+///     SceneNode::Transform { attributes: Dict::new(), frames: vec!(Dict::new()), child: 1 },
+///     SceneNode::Group { attributes:  Dict::new(), children: vec!(2) },
+///     SceneNode::Transform { attributes: Dict::new(), frames: vec!({let mut map = Dict::new(); map.insert("_t".to_string(), "0 0 1".to_string()); map}), child: 3 },
+///     SceneNode::Shape { attributes: Dict::new(), models: vec!(ShapeModel { model_id: 0, attributes: Dict::new() }) }
+///   ),
 ///   palette: DEFAULT_PALETTE.to_vec(),
 ///   materials: (0..256).into_iter()
 ///     .map(|i| Material {
@@ -191,48 +217,26 @@ mod tests {
             models: vec![Model {
                 size: Size { x: 2, y: 2, z: 2 },
                 voxels: vec![
-                    Voxel {
-                        x: 0,
-                        y: 0,
-                        z: 0,
-                        i: 225,
-                    },
-                    Voxel {
-                        x: 0,
-                        y: 1,
-                        z: 1,
-                        i: 215,
-                    },
-                    Voxel {
-                        x: 1,
-                        y: 0,
-                        z: 1,
-                        i: 235,
-                    },
-                    Voxel {
-                        x: 1,
-                        y: 1,
-                        z: 0,
-                        i: 5,
-                    },
+                    Voxel { x: 0, y: 0, z: 0, i: 225 },
+                    Voxel { x: 0, y: 1, z: 1, i: 215 },
+                    Voxel { x: 1, y: 0, z: 1, i: 235 },
+                    Voxel { x: 1, y: 1, z: 0, i: 5 },
                 ],
             }],
             palette: palette,
             materials: materials,
+            scene: Vec::new(),
+            layers: Vec::new(),
         }
     }
 
     fn compare_data(actual: DotVoxData, expected: DotVoxData) {
         assert_eq!(actual.version, expected.version);
         assert_eq!(actual.models.len(), expected.models.len());
-        actual
-            .models
-            .into_iter()
-            .zip(expected.models.into_iter())
-            .for_each(|(actual, expected)| {
-                assert_eq!(actual.size, expected.size);
-                vec::are_eq(actual.voxels, expected.voxels);
-            });
+        actual.models.into_iter().zip(expected.models.into_iter()).for_each(|(actual, expected)| {
+            assert_eq!(actual.size, expected.size);
+            vec::are_eq(actual.voxels, expected.voxels);
+        });
         vec::are_eq(actual.palette, expected.palette);
         vec::are_eq(actual.materials, expected.materials);
     }
@@ -241,10 +245,7 @@ mod tests {
     fn valid_file_with_palette_is_read_successfully() {
         let result = load("src/resources/placeholder.vox");
         assert!(result.is_ok());
-        compare_data(
-            result.unwrap(),
-            placeholder(DEFAULT_PALETTE.to_vec(), DEFAULT_MATERIALS.to_vec()),
-        );
+        compare_data(result.unwrap(), placeholder(DEFAULT_PALETTE.to_vec(), DEFAULT_MATERIALS.to_vec()));
     }
 
     #[test]
@@ -267,10 +268,7 @@ mod tests {
         let result = super::parse_vox_file(CompleteByteSlice(&bytes));
         assert!(result.is_ok());
         let (_, models) = result.unwrap();
-        compare_data(
-            models,
-            placeholder(DEFAULT_PALETTE.to_vec(), DEFAULT_MATERIALS.to_vec()),
-        );
+        compare_data(models, placeholder(DEFAULT_PALETTE.to_vec(), DEFAULT_MATERIALS.to_vec()));
     }
 
     #[test]

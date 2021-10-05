@@ -2,8 +2,8 @@
 #![allow(missing_docs)]
 
 use nom::types::CompleteByteSlice;
-use parser::{le_i32, le_u32, parse_dict};
-use Dict;
+use crate::parser::{le_i32, le_u32, parse_dict};
+use crate::Dict;
 
 /// Node header.
 #[derive(Debug, PartialEq)]
