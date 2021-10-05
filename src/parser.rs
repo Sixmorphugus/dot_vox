@@ -3,7 +3,7 @@ use nom::IResult;
 use std::collections::HashMap;
 use std::str;
 use std::str::Utf8Error;
-use {
+use crate::{
     model, palette, scene, DotVoxData, Layer, Model, SceneGroup, SceneNode, SceneShape,
     SceneTransform, Size, Voxel, DEFAULT_PALETTE,
 };
